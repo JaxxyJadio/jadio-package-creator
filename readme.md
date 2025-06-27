@@ -1,172 +1,135 @@
 Jadio Package Creator (JPC)
-JPC is a modular CLI utility for the Jadio framework that helps you scaffold new Jadio-compatible packages with an exact, standardized structure.
+Jadio Package Creator (JPC) is the official CLI utility for the [Jadio Framework], designed to help you quickly scaffold, customize, and publish new Jadio-compatible packages with consistent, professional structure.
 
-It brings consistency and automation to creating modular Jadio extensions.
+It automates repetitive setup steps and enforces a standardized layout for all Jadio extensions, making collaboration and maintenance easier.
 
-🎯 What Does It Do?
-✅ Helps you create Jadio packages that follow the required skeleton.
-✅ Stores your preferred target folder for new projects.
-✅ Fully CLI-driven and interactive.
-✅ Supports adding new CLI commands to your generated packages.
-✅ Generates AI-friendly project guides for LLMs to help you finish them.
-✅ Ensures all generated packages are ready to be developed and published.
+Overview of Features
+Fully interactive CLI wizard for generating new Jadio packages
+Remembers your preferred target folder for future projects
+Allows adding new CLI commands any time to your generated packages
+Generates an AI-friendly guide to help LLMs assist in developing your package
+Ensures all generated projects are ready to be developed and published to PyPI
 
-📦 Install
-First install the main Jadio framework (required):
+Installation
+First install the core Jadio framework (required):
 
-bash
-Copy
-Edit
 pip install jadio
-Then install JPC:
 
-bash
-Copy
-Edit
+Then install the Jadio Package Creator:
+
 pip install jadio-package-creator
-✅ This will make the jpc CLI command available:
 
-bash
-Copy
-Edit
-jpc --help
-⚙️ Commands
-✅ 1. jpc init
-🔹 Must be run first.
-🔹 Sets up JPC for the current project.
-🔹 Creates jadio_config/jpcconfig.json in your project root if it doesn't already exist.
+This will make the jpc CLI command available in your environment.
 
-Example:
+Available Commands
 
-bash
-Copy
-Edit
-jpc init
-After running, your project will have:
+1. jpc init
+Sets up JPC for use in your project folder.
+Creates a jadio_config/jpcconfig.json file if it doesn't already exist.
+Stores your default target folder for new packages.
+Must be run at least once per project to initialize configuration.
 
-pgsql
-Copy
-Edit
+What it does:
+Creates a new folder structure in your project root:
+
 project-root/
 └── jadio_config/
     └── jpcconfig.json
-✅ Stores your default creation directory for future scaffolding.
 
-✅ 2. jpc config
-🔹 View or set the default project creation directory.
-🔹 Updates jpcconfig.json in your project's jadio_config/ folder.
+2. jpc config
+Lets you view or update the saved default project creation directory.
+Edits the creation_directory value in your jpcconfig.json config file.
 
-Example:
+Example usage:
+When you run this, you can see or set the path where new packages will be created by default.
 
-bash
-Copy
-Edit
-jpc config
-✅ 3. jpc create
-🔹 Interactive CLI wizard.
-🔹 Prompts for:
+3. jpc create
+This is the main interactive wizard for creating new Jadio packages.
 
-Package name
+How it works:
+Prompts you for the target creation folder.
+Defaults to the last-used directory stored in config.
+If none is saved yet, defaults to your current working directory.
+Always ensures there's a valid path, so pressing Enter never breaks.
+Prompts for the new package name.
+Hyphens in the name are automatically converted to underscores to ensure valid Python package naming.
+Generates the complete, standardized Jadio package skeleton in the target folder.
 
-Target folder (remembers last-used from config)
+Then enters an interactive CLI script-adding loop:
+Asks you if you want to add a new CLI command script.
+You can add as many as you want (each with its own Python module and JSON command registration).
+Always checks for duplicate filenames or JSON entries before adding.
+Finally, automatically runs AI module generation to produce a ready-to-use ai.txt instruction file at the end of the creation process.
 
-🔹 Generates exact Jadio package skeleton in chosen folder:
+Generated Folder Structure:
 
-pgsql
+markdown
 Copy
 Edit
 [new-project-name]/
 ├── src/
-│   └── [new-project-name]/           # hyphens in name become underscores
-│       ├── __init__.py               # __version__ = "0.0.1"
-│       └── cli/
-│           ├── __init__.py
-│           ├── main.py
-│           ├── clicommands.json
-│       └── core/
-│           └── __init__.py           # Empty folder otherwise
+│   └── [new_project_name]/
+│       ├── __init__.py         (includes __version__ = "0.0.1")
+│       ├── cli/
+│       │   ├── __init__.py
+│       │   ├── main.py
+│       │   └── clicommands.json
+│       ├── core/
+│       │   └── __init__.py
+│       └── ai/
+│           └── __init__.py
 ├── pyproject.toml
 ├── README.md
 ├── LICENSE
 └── .gitignore
-✅ Ensures core/ in generated project is empty except for __init__.py for user customization.
-✅ Ensures package name inside src/ uses valid Python naming (hyphens ➜ underscores).
 
-✅ 4. jpc cli
-🔹 Adds a new CLI command to your generated package.
-🔹 Works in two modes:
+✅ Ensures that core/ and ai/ are empty except for __init__.py, ready for your customization.
+✅ Remembers your preferred target folder automatically for next time.
+✅ Lets you expand CLI commands at creation time, without having to re-run anything later.
+✅ Always generates an ai.txt guide to help LLMs understand your project structure and rules.
 
-✅ Interactive:
+4. jpc cli
+Adds a new CLI command script to an existing Jadio package.
 
-bash
-Copy
-Edit
-jpc cli
-Prompts you:
+Fully modular: use it any time after creation to expand your CLI.
 
-pgsql
-Copy
-Edit
-❓ What would you like your command to be called?
-✅ Creates:
+Two Modes:
 
-cli/[name].py with a starter function.
+Interactive mode:
+Asks you for the new command's name.
+Creates the Python module for it in the CLI folder.
+Updates clicommands.json with correct module/function mapping.
 
-Updates clicommands.json with correct mapping.
+Non-interactive mode:
+Lets you specify the command name directly without prompts.
 
-✅ Non-interactive:
+Safety features:
+Always checks for existing filenames before writing.
+Always checks for duplicate command entries in clicommands.json.
 
-bash
-Copy
-Edit
-jpc cli -<name>
-No prompt. Just creates it directly.
+5. jpc ai
+Generates an AI-friendly instruction file in your project root called ai.txt.
+Designed as a prompt-ready guide for LLMs (like ChatGPT) to help you finish your project.
 
-✅ Always checks for existing files or duplicate entries before adding.
+Modes:
 
-✅ 5. jpc ai
-🔹 Generates an AI instruction file in your project root called ai.txt.
-🔹 This file is designed as a prompt-ready guide for LLMs (like ChatGPT) to help you complete your project.
+Interactive mode:
+Asks you to enter a short description for the project.
+Includes this in ai.txt.
 
-✅ Interactive mode:
+Fast mode:
+Skips the description prompt and just generates the structure immediately.
 
-bash
-Copy
-Edit
-jpc ai
-Asks you for a description of the project.
-
-Includes it in ai.txt.
-
-✅ Fast mode:
-
-bash
-Copy
-Edit
-jpc ai -f
-Skips description prompt.
-
-Just generates the structure.
-
-✅ The generated ai.txt includes:
-
-Timestamp
-
+Contents of ai.txt:
+Timestamp of generation
 Project name
+Version (from __init__.py)
+Full, recursively scanned folder and file structure
+A clear TODO section listing development steps
+Hardline instructions preventing structural changes
 
-Version from __init__.py
+Example of Hardline Instructions Section:
 
-Full folder and file structure (recursively scanned)
-
-TODO section
-
-Hardline instructions so the LLM doesn't change your defined structure or assumptions
-
-✅ Example of generated ai.txt section:
-
-pgsql
-Copy
-Edit
 ## HARDLINE INSTRUCTIONS
 - Do not change the folder or file structure above
 - Only fill in the content of the files as shown
@@ -174,45 +137,33 @@ Edit
 - Do not add extra commands or files
 - Do not assume or guess new features
 - Maintain the CLI as defined
-🗂️ jpcconfig.json
-Located inside:
+Configuration File
+jpcconfig.json
 
-bash
-Copy
-Edit
-project-root/jadio_config/jpcconfig.json
+Always stored inside the jadio_config/ folder in your project root.
+
+Stores your preferred default target folder for new package creation.
+
 Example contents:
 
-json
-Copy
-Edit
+
 {
   "creation_directory": "C:\\JadioPackages"
 }
+
 ✅ Created once by jpc init.
-✅ Managed by jpc config.
-✅ Used by jpc create to remember last target folder.
+✅ Managed and updated by jpc config.
+✅ Used automatically by jpc create.
 
-✅ How It Works Internally
-JPC itself is a valid Jadio package following this same skeleton.
+How It Works Internally
+JPC itself is a valid Jadio package built using the same skeleton it generates for you:
+Includes its own CLI commands and templates.
+Uses those templates to scaffold new packages with correct structure.
+Leaves core/ and ai/ folders empty in new projects for your own implementation.
+Lets you add as many CLI commands as you want over time.
+Ensures your project is fully documented for AI helpers via the AI module.
 
-It contains all template files in its core/ folder.
-
-Uses those templates to scaffold new projects.
-
-Ensures generated core/ in new projects is empty for the user to customize.
-
-Lets you keep expanding your CLI over time with jpc cli and document it for AI help with jpc ai.
-
-💼 License
+License
 MIT License
 
-🌐 Links
-Jadio Framework
-
-PyPI: jadio
-
-PyPI: jadio-package-creator
-
 Build modular. Build Jadio. 🚀
-

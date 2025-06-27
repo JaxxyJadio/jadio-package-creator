@@ -1,35 +1,28 @@
-import sys
 import json
 import re
 from pathlib import Path
 from datetime import datetime
 
-def run_ai(args):
+def generate_ai_module(ai_dir, description=None):
     print("⚡️ Running JPC AI HELPER...")
 
-    project_root = Path.cwd()
-    src_dir = project_root / "src"
-
-    # Find the single package inside src
-    packages = [p for p in src_dir.iterdir() if p.is_dir()]
-    if not packages:
-        print("❌ Error: No package found in src/")
+    if not ai_dir.exists():
+        print(f"❌ AI directory does not exist: {ai_dir}")
         return
 
-    package_dir = packages[0]
-    package_name = package_dir.name
+    # Walk back up to get full context
+    package_src_dir = ai_dir.parent
+    src_dir = ai_dir.parents[1]
+    package_root = ai_dir.parents[2]
+    package_name = package_src_dir.name
 
     # Default description
-    description = ""
-
-    # Check for forced mode
-    if args and args[0].startswith("-") and args[0][1:] == "f":
-        print("✅ Fast mode: No description prompt.")
-    else:
-        description = input("❓ Describe this project (short sentence): ").strip()
+    if description is None:
+        user_input = input("❓ Describe this project (short sentence): ").strip()
+        description = user_input
 
     # Attempt to get version from __init__.py
-    init_file = package_dir / "__init__.py"
+    init_file = package_src_dir / "__init__.py"
     if init_file.exists():
         content = init_file.read_text()
         match = re.search(r'__version__\s*=\s*[\'"]([^\'"]+)[\'"]', content)
@@ -49,8 +42,8 @@ def run_ai(args):
 
     scan_dir(src_dir)
 
-    # Create ai.txt
-    output_file = project_root / "ai.txt"
+    # Create ai.txt in the *package root*
+    output_file = package_root / "ai.txt"
     timestamp = datetime.now().isoformat()
 
     with output_file.open("w") as f:

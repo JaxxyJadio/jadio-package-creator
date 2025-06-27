@@ -1,6 +1,9 @@
 import json
 import shutil
+import os
 from pathlib import Path
+from . import cli
+from . import ai
 
 def run_create(args):
     print("⚡️ Running JPC CREATE...")
@@ -18,27 +21,23 @@ def run_create(args):
     with open(jpc_config_file) as f:
         config = json.load(f)
 
-    current_target = config.get("creation_directory", "")
-    print(f"\n✅ Current creation directory:\n{current_target if current_target else '(not set)'}\n")
+    # Resolve default target: saved or current working directory
+    current_target = config.get("creation_directory", "").strip()
+    default_target = current_target if current_target else str(Path.cwd())
 
-    # Prompt for new directory or confirm existing
-    new_target_input = input("Enter target creation folder (or press Enter to keep current): ").strip()
-    if not new_target_input:
-        if not current_target:
-            print("❌ No directory set. Aborting.")
-            return
-        new_target = Path(current_target).expanduser().resolve()
-    else:
-        new_target = Path(new_target_input).expanduser().resolve()
+    print(f"\n✅ Current creation directory:\n{default_target}\n")
+
+    new_target_input = input(f"Enter target creation folder (or press Enter to use '{default_target}'): ").strip()
+    target_directory = Path(new_target_input).expanduser().resolve() if new_target_input else Path(default_target).resolve()
 
     # Save updated directory back to config
-    config["creation_directory"] = str(new_target)
+    config["creation_directory"] = str(target_directory)
     with open(jpc_config_file, "w") as f:
         json.dump(config, f, indent=2)
 
-    if not new_target.exists():
-        print(f"✅ Creating folder: {new_target}")
-        new_target.mkdir(parents=True, exist_ok=True)
+    if not target_directory.exists():
+        print(f"✅ Creating folder: {target_directory}")
+        target_directory.mkdir(parents=True, exist_ok=True)
 
     # Prompt for package name
     package_name = input("\nEnter the new Jadio package name: ").strip()
@@ -50,7 +49,7 @@ def run_create(args):
     package_src_name = package_name.replace("-", "_")
 
     # Create root project folder
-    package_root = new_target / package_name
+    package_root = target_directory / package_name
     print(f"\n✅ Generating Jadio package at:\n{package_root}\n")
     package_root.mkdir(parents=True, exist_ok=True)
 
@@ -58,14 +57,17 @@ def run_create(args):
     src_dir = package_root / "src" / package_src_name
     cli_dir = src_dir / "cli"
     core_dir = src_dir / "core"
+    ai_dir = src_dir / "ai"
 
     cli_dir.mkdir(parents=True, exist_ok=True)
     core_dir.mkdir(parents=True, exist_ok=True)
+    ai_dir.mkdir(parents=True, exist_ok=True)
 
     # Write __init__.py files
     (src_dir / "__init__.py").write_text('__version__ = "0.0.1"\n')
     (cli_dir / "__init__.py").write_text("")
     (core_dir / "__init__.py").write_text("")
+    (ai_dir / "__init__.py").write_text("")
 
     # Write clicommands.json
     (cli_dir / "clicommands.json").write_text("{}\n")
@@ -105,3 +107,25 @@ packages = ["src/{package_src_name}"]
     (package_root / "pyproject.toml").write_text(pyproject_content)
 
     print(f"✅ Package '{package_name}' created successfully at {package_root}")
+
+    # 🔥 Prompt for CLI scripts loop
+    while True:
+        response = input("\n🛠️  Do you want to create a new CLI command script? (y/n): ").strip().lower()
+        if response in ("n", "no"):
+            print("✅ Done adding CLI scripts.")
+            break
+        if response in ("y", "yes"):
+            script_name = input("Enter CLI script name (e.g. start, status): ").strip()
+            if script_name:
+                cli.create_cli_script(cli_dir, script_name)
+            else:
+                print("❌ No script name entered. Skipping.")
+        else:
+            print("❓ Please answer y or n.")
+
+    # ✅ Generate AI module once after CLI loop
+    print("\n🤖 Generating AI module...")
+    ai.generate_ai_module(ai_dir)
+    print("✅ AI module created successfully!")
+
+    print("\n🎉 JPC CREATE flow complete!")
