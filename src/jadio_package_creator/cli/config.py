@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 
-def run_config():
+def run_config(args):
     print("⚡️ Running JPC CONFIG...")
 
     project_root = Path.cwd()

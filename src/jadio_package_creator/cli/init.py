@@ -2,7 +2,7 @@ import os
 import json
 from pathlib import Path
 
-def run_init():
+def run_init(args):
     print("⚡️ Running JPC INIT...")
 
     # Assume current working directory is project root

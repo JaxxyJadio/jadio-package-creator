@@ -2,7 +2,7 @@ import json
 import shutil
 from pathlib import Path
 
-def run_create():
+def run_create(args):
     print("⚡️ Running JPC CREATE...")
 
     project_root = Path.cwd()
